@@ -2,10 +2,14 @@
 
 import { Navbar } from '../components/Navbar';
 import { TokenCard } from '../components/TokenCard';
+import { BuyModal } from '../components/BuyModal';
 import { fetchAllTokensWithDetails, TokenItem } from '../services/tokenService';
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 
 export default function Home() {
+  const [selectedToken, setSelectedToken] = useState<TokenItem | null>(null);
+
   const { data: tokens, isLoading, isError, refetch } = useQuery({
     queryKey: ['launchedTokens'],
     queryFn: fetchAllTokensWithDetails,
@@ -39,7 +43,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* State 2: Error State dengan Retry */}
+        {/* State 2: Error State */}
         {isError && (
           <div className="p-8 text-center bg-red-950/20 border border-red-900/50 rounded-xl my-6">
             <p className="text-red-400 font-medium mb-3">Gagal memuat data token dari blockchain.</p>
@@ -59,21 +63,31 @@ export default function Home() {
           </div>
         )}
 
-        {/* State 4: Berhasil Dimuat */}
+        {/* State 4: List Token */}
         {!isLoading && !isError && tokens && tokens.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {tokens.map((token) => (
               <TokenCard 
                 key={token.token} 
                 token={token} 
-                onSelect={(selected) => {
-                  alert(`Token dipilih: ${selected.name} (${selected.symbol})`);
-                }} 
+                onSelect={(selected) => setSelectedToken(selected)} 
               />
             ))}
           </div>
         )}
       </div>
+
+      {/* Buy Modal Component */}
+      {selectedToken && (
+        <BuyModal
+          token={selectedToken}
+          onClose={() => setSelectedToken(null)}
+          onSuccess={() => {
+            refetch();
+            setSelectedToken(null);
+          }}
+        />
+      )}
     </main>
   );
 }
