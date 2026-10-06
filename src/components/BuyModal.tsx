@@ -24,7 +24,6 @@ export function BuyModal({ token, onClose, onSuccess }: BuyModalProps) {
   const recipientAddress = address || ('0x0000000000000000000000000000000000000000' as `0x${string}`);
   const zeroAddress = '0x0000000000000000000000000000000000000000' as `0x${string}`;
 
-  // 1. Fetch estimasi token dari getAmountOut
   const { data: expectedTokensBigInt, isLoading: isEstimating } = useReadContract({
     address: token.curve,
     abi: BondingCurveABI,
@@ -37,7 +36,6 @@ export function BuyModal({ token, onClose, onSuccess }: BuyModalProps) {
 
   const rawExpected = expectedTokensBigInt ? (expectedTokensBigInt as bigint) : 0n;
 
-  // Fallback jika getAmountOut mengembalikan 0n
   let expectedTokens = rawExpected;
   if (expectedTokens === 0n && ethAmountWei > 0n && token.spotPrice > 0) {
     const approx = Number(ethAmountWei) / (token.spotPrice * 1e18);
@@ -46,7 +44,6 @@ export function BuyModal({ token, onClose, onSuccess }: BuyModalProps) {
     }
   }
 
-  // Hitung minTokensOut dari expectedTokens minus slippage
   const minTokensOut = expectedTokens > 0n
     ? (expectedTokens * BigInt(Math.floor((100 - slippage) * 100))) / 10000n
     : 1n; // Set minimal 1n wei
@@ -60,7 +57,7 @@ export function BuyModal({ token, onClose, onSuccess }: BuyModalProps) {
   const handleBuy = () => {
     if (!ethAmountWei || ethAmountWei <= 0n) return;
 
-    // Menentukan Gas Limit realistis (150,000 gas) agar estimasi harga gas di MetaMask wajar
+
     writeContract({
       address: token.curve,
       abi: BondingCurveABI,
@@ -71,7 +68,7 @@ export function BuyModal({ token, onClose, onSuccess }: BuyModalProps) {
         zeroAddress
       ],
       value: ethAmountWei,
-      gas: 150_000n, // Set gas limit wajar untuk transaksi swap/buy
+      gas: 150_000n, 
     });
   };
 
